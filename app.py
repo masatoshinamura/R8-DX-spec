@@ -6,7 +6,8 @@ import re
 # --- 設定 ---
 PDF_FILE = "kyoutsu_shiyousho_r8.pdf"
 
-st.set_page_config(page_title="仕様書高度検索システム", layout="wide")
+# 💡 アイコンを設定しています（🚀）。お好きな絵文字に変更可能です。
+st.set_page_config(page_title="仕様書高度検索システム", page_icon="🚀", layout="wide")
 
 # 💡【ベース辞書】略称で検索したいものや、特に最優先で出したいものを登録
 BASE_SOUSOKU_MAP = {
@@ -65,6 +66,7 @@ def highlight_text_html(text):
         return ""
     for word, color in PROCEDURE_COLORS.items():
         if word in text:
+            # ダークモード対策として「color: black;」を指定
             badge = f'<span style="background-color:{color}; padding:2px 6px; border-radius:4px; font-weight:bold; color:black;">{word}</span>'
             text = text.replace(word, badge)
     return text
@@ -164,13 +166,13 @@ with col1:
     target_sousoku_name = ""
     
     if kw1:
-        # 💡【検索の賢さアップ】完全一致を先に探し、無ければ部分一致で探す
+        # 💡【修正】「履行報告書」と入力されても「履行報告」がヒットするように判定ロジックを修正
         matched_key = None
         if kw1 in SOUSOKU_MAP:
             matched_key = kw1
         else:
             for k in SOUSOKU_MAP.keys():
-                if kw1 in k:
+                if k in kw1 or kw1 in k:
                     matched_key = k
                     break
         
