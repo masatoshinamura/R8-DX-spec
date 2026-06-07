@@ -212,11 +212,11 @@ with col2:
                 
         st.info(f"表示中: **{st.session_state.selected_page} ページ目** （検索キーワードは黄色くハイライト）")
         
-        # 💡 【高さ調整】左側エリアと下端を完璧に一致させるため、こちらも「450」に設定
-        with st.container(height=450):
+        # 💡 【高さ調整】左側エリアと下端を完璧に一致させるため、こちらも「960」に設定
+        with st.container(height=960):
             img_bytes = get_page_image_with_highlight(PDF_FILE, st.session_state.selected_page, kw1, target_sousoku_code)
             st.image(img_bytes, use_container_width=True)
     else:
         # 未選択状態でも枠の高さを維持して下側を合わせるためのダミーコンテナ
-        with st.container(height=600):
+        with st.container(height=960):
             st.markdown("<div style='color: white;'>左側の検索結果から「開く」ボタンを押すと、ここに蛍光ペンが引かれた仕様書が表示されます。</div>", unsafe_allow_html=True)
