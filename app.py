@@ -54,7 +54,6 @@ def highlight_text_html(text):
         return ""
     for word, color in PROCEDURE_COLORS.items():
         if word in text:
-            # タグ内の文字は黒（背景色に合わせる）
             badge = f'<span style="background-color:{color}; padding:2px 6px; border-radius:4px; font-weight:bold; color:black;">{word}</span>'
             text = text.replace(word, badge)
     return text
@@ -139,7 +138,6 @@ with col1:
     st.markdown("<h3 style='color: white;'>🔍 条件検索</h3>", unsafe_allow_html=True)
     kw1 = st.text_input("検索キーワードを入力", placeholder="例: トンネル工、舗装打換え工、コルゲートパイプ")
     
-    # 💡 要望1: 関連基準・総則の文字を白色に
     st.markdown("<h3 style='color: white;'>📚 関連基準・総則</h3>", unsafe_allow_html=True)
     target_sousoku_code = ""
     target_sousoku_name = ""
@@ -179,32 +177,31 @@ with col1:
         else:
             st.success(f"関連箇所が {len(results)} 件見つかりました。")
             
-            for i, res in enumerate(results):
-                # 💡 要望1: 検索結果の文字も白色に統一
-                if target_sousoku_code and target_sousoku_code in res['text']:
-                    title_text = f"🌟 【基準】 {target_sousoku_name} （P.{res['page']}）"
-                else:
-                    title_text = f"📁 [{res['type']}] ページ {res['page']}"
-                
-                st.markdown(f"<div style='color: white; font-weight: bold; font-size: 16px;'>{title_text}</div>", unsafe_allow_html=True)
-                
-                highlighted_text = highlight_text_html(res['text'])
-                st.markdown(f'<p style="font-size:14px; color: white; margin-left:15px; background-color: #333; padding: 10px; border-radius: 5px;">{highlighted_text}</p>', unsafe_allow_html=True)
-                
-                # 💡 要望3: 施工計画書などに転記するための「ワンクリック・コピー枠」
-                copy_str = f"【根拠基準】{target_sousoku_name if target_sousoku_name else '共通仕様書'}\n【該当ページ】P.{res['page']}\n【内容】{res['text']}"
-                st.caption("👇 右上のマークからワンクリックでコピーできます（施工計画書への転記用）")
-                st.code(copy_str, language="text")
-                
-                if st.button(f"📖 P.{res['page']} を開く", key=f"btn_{i}"):
-                    st.session_state.selected_page = res['page']
-                st.divider()
+            # 💡 【高さ調整】右側の表示枠と下側をピッタリ合わせるために「480」に設定
+            with st.container(height=480):
+                for i, res in enumerate(results):
+                    if target_sousoku_code and target_sousoku_code in res['text']:
+                        title_text = f"🌟 【基準】 {target_sousoku_name} （P.{res['page']}）"
+                    else:
+                        title_text = f"📁 [{res['type']}] ページ {res['page']}"
+                    
+                    st.markdown(f"<div style='color: white; font-weight: bold; font-size: 16px;'>{title_text}</div>", unsafe_allow_html=True)
+                    
+                    highlighted_text = highlight_text_html(res['text'])
+                    st.markdown(f'<p style="font-size:14px; color: white; margin-left:15px; background-color: #333; padding: 10px; border-radius: 5px;">{highlighted_text}</p>', unsafe_allow_html=True)
+                    
+                    copy_str = f"【根拠基準】{target_sousoku_name if target_sousoku_name else '共通仕様書'}\n【該当ページ】P.{res['page']}\n【内容】{res['text']}"
+                    st.caption("👇 右上のマークからワンクリックでコピーできます（施工計画書への転記用）")
+                    st.code(copy_str, language="text")
+                    
+                    if st.button(f"📖 P.{res['page']} を開く", key=f"btn_{i}"):
+                        st.session_state.selected_page = res['page']
+                    st.divider()
 
 with col2:
     st.markdown("<h3 style='color: white;'>📖 仕様書プレビュー</h3>", unsafe_allow_html=True)
     if st.session_state.selected_page is not None:
         
-        # 💡 要望2: 仕様書を前後にスクロール（ページめくり）できる機能
         c1, c2, c3 = st.columns([1, 2, 1])
         with c1:
             if st.button("◀ 前のページへ"):
@@ -215,9 +212,11 @@ with col2:
                 
         st.info(f"表示中: **{st.session_state.selected_page} ページ目** （検索キーワードは黄色くハイライト）")
         
-        # 💡 要望2: 縦に長い画像でもマウスホイールでスクロールできる枠（高さ800px固定）
-        with st.container(height=800):
+        # 💡 【高さ調整】左側エリアと下端を完璧に一致させるため、こちらも「450」に設定
+        with st.container(height=450):
             img_bytes = get_page_image_with_highlight(PDF_FILE, st.session_state.selected_page, kw1, target_sousoku_code)
             st.image(img_bytes, use_container_width=True)
     else:
-        st.markdown("<div style='color: white;'>左側の検索結果から「開く」ボタンを押すと、ここに蛍光ペンが引かれた仕様書が表示されます。</div>", unsafe_allow_html=True)
+        # 未選択状態でも枠の高さを維持して下側を合わせるためのダミーコンテナ
+        with st.container(height=600):
+            st.markdown("<div style='color: white;'>左側の検索結果から「開く」ボタンを押すと、ここに蛍光ペンが引かれた仕様書が表示されます。</div>", unsafe_allow_html=True)
